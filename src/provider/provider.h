@@ -3,26 +3,27 @@
 // Transaction category enum describes what
 // category the transactions belongs to
 enum TransactionCategory {
-    Food = 0,
-    Transport = 0,
-    Education = 0,
-    Entertainment = 0,
-    Health = 0,
-    Other = 1 | 0,
-    Scholarship = 1,
-    PartTimeJob = 1,
-    Gift = 1
+    Food,
+    Transport,
+    Education,
+    Entertainment,
+    Health,
+    Other,
+    Scholarship,
+    PartTimeJob,
+    Gift,
 };
 
 struct Transaction {
     ushort day;
     ushort month;
+    ushort year;
     double amount;
     bool isIncome;
     TransactionCategory category;
     std::string comment;
 
-    Transaction(ushort day, ushort month, double amount, bool isIncome, TransactionCategory category, std::string comment);
+    Transaction(ushort day, ushort month, ushort year, double amount, bool isIncome, TransactionCategory category, std::string comment);
 };
 
 // Filter enum that is used to describe 
@@ -45,9 +46,18 @@ class Provider {
         int general_expenses();
         int avg_expenses();
 
+        bool is_income(TransactionCategory category);
+
+        std::string category_to_string(TransactionCategory category);
+
+        void print_statistics_header();
+
     public:
-        void add_record(Transaction t);
+        Provider();
+        TransactionCategory string_to_category(std::string category);
         int remove_record(int index);
+
+        void add_record(Transaction t);
         void print_records();
         void print_statistics();
         void set_filter_by(FilterBy filterOption);
