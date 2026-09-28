@@ -17,10 +17,12 @@ Transaction::Transaction(ushort day, ushort month, ushort year, double amount, b
     this->comment = comment;
 }
 
+// Adds a new record into journal
 void Provider::add_record(Transaction t) {
     this->journal.push_back(t);
 }
 
+// Removes record from journal
 int Provider::remove_record(int removeIndex) {
     if(removeIndex < 0 || removeIndex > this->journal.size()) return -1;
 
@@ -39,6 +41,8 @@ bool Provider::is_income(TransactionCategory category) {
     }
 }
 
+// Converts TransactionCategory type into string
+// Used to output the category of the transaction
 std::string Provider::category_to_string(TransactionCategory category) {
     switch(category) {
         case Food: return "Food";
@@ -53,6 +57,8 @@ std::string Provider::category_to_string(TransactionCategory category) {
     }
 }
 
+// Transforms string to TransactionCategory type
+// Used to covert user's input into category
 TransactionCategory Provider::string_to_category(std::string category) {
     std::transform(category.begin(), category.end(), category.begin(),
         [](unsigned char c) {return std::tolower(c);});
@@ -67,19 +73,21 @@ TransactionCategory Provider::string_to_category(std::string category) {
     else return Other;
 }
 
+// Print all saved records in the journal
+// Automatically applies filters of FilterBy enum set in the Provider class
 void Provider::print_records() {
     print_statistics_header();
     int index = 0;
     std::vector<Transaction> trans;
-    for(Transaction t : this->journal) {
-        if(this->filter_config == None || this->filter_config == t.isIncome) trans.push_back(t);
-    }
     FilterBy filter_conf = this->filter_config;
+    for(Transaction t : this->journal) {
+        if(filter_conf == None || filter_conf == t.isIncome) trans.push_back(t);
+    }
     std::sort(trans.begin(), trans.end(), [filter_conf](Transaction t1, Transaction t2) {
         switch(filter_conf) {
-            case FilterBy::Expenses:
+            case Expenses:
                 return t1.amount > t2.amount;
-            case FilterBy::Income:
+            case Income:
                 return t1.amount > t2.amount;
             case Category:
                 return t1.category > t2.category;

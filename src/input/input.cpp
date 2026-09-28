@@ -1,8 +1,5 @@
 #include "input.h"
-#include <ios>
-#include <iostream>
-#include <limits>
-#include <string>
+#include <cctype>
 
 Input::Input() {
     this->provider = Provider();
@@ -44,8 +41,14 @@ Transaction Input::generate_transaction() {
     std::cin >> amount;
     std::cout << std::endl;
 
-    std::cout << "Is income(1/0): ";
-    std::cin >> isIncome;
+    std::cout << "Is income(y/n): ";
+    char input;
+    while(!(std::cin >> input) ||
+        std::tolower(static_cast<unsigned char>(input)) != 'y' && std::tolower(static_cast<unsigned char>(input)) != 'n') {
+            std::cout << "Is income(y/n): ";
+            continue;
+        };
+    isIncome = input == 'y' ? true : false;
     std::cout << std::endl;
 
     std::cin.ignore();
@@ -93,13 +96,38 @@ void Input::handle_input() {
                 this->provider.print_records();
                 break;
             }
+            case 3: {
+                std::cout << "Choose filtering type(1. By expenses; 2. By income; 3. By category; 4. By month; 0. No filtering): ";
+                int choice;
+                std::cin >> choice;
+
+                FilterBy filterType;
+                switch(choice) {
+                    case 1:
+                        filterType = Expenses;
+                        break;
+                    case 2:
+                        filterType = Income;
+                        break;
+                    case 3:
+                        filterType = Category;
+                        break;
+                    case 4:
+                        filterType = Month;
+                        break;
+                    default:
+                        filterType = None;
+                }
+                this->provider.set_filter_by(filterType);
+                break;
+            }
             case 4: {
                 this->provider.print_statistics();
                 break;
             }
             case 5: {
                 this->provider.print_records();
-                std::cout << "index to remove: ";
+                std::cout << "Index to remove: ";
                 ushort index;
                 std::cin >> index;
                 this->provider.remove_record(index);
