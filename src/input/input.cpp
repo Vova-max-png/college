@@ -1,5 +1,4 @@
 #include "input.h"
-#include <cctype>
 
 Input::Input() {
     this->provider = Provider();
@@ -14,86 +13,76 @@ void Input::print_help() {
         << "0. Exit" << std::endl;
 }
 
+// Generate transaction, protects each field from being set unproperly
 Transaction Input::generate_transaction() {
-    ushort day;
-    ushort month;
-    ushort year;
+    short day = -1;
+    short month = -1;
+    short year= -1;
 
-    double amount;
+    double amount = -1;
     bool isIncome;
 
     TransactionCategory category;
     std::string comment;
 
-    std::cout << "Day: ";
-    std::cin >> day;
-    std::cout << std::endl;
+    this->ask_user_double<short>(&day, "day", 1, 31);
 
-    std::cout << "Month: ";
-    std::cin >> month;
-    std::cout << std::endl;
-                
-    std::cout << "Year: ";
-    std::cin >> year;
-    std::cout << std::endl;
+    this->ask_user_double<short>(&month, "month", 1, 12);
 
-    std::cout << "Amount: ";
-    std::cin >> amount;
-    std::cout << std::endl;
+    this->ask_user_double<short>(&year, "year", 1, 99);
 
-    std::cout << "Is income(y/n): ";
+    this->ask_user_double<double>(&amount, "amount", 0, std::numeric_limits<double>::max());
+    
     char input;
-    while(!(std::cin >> input) ||
-        std::tolower(static_cast<unsigned char>(input)) != 'y' && std::tolower(static_cast<unsigned char>(input)) != 'n') {
-            std::cout << "Is income(y/n): ";
-            continue;
-        };
+    input = this->handle_input_acception("Is income(Y/n): ");
     isIncome = input == 'y' ? true : false;
-    std::cout << std::endl;
 
-    std::cin.ignore();
+    std::string categoryHandler;
+    categoryHandler = this->handle_input_data("Category: ");
+    category = this->provider.string_to_category(categoryHandler);
 
-    std::string tempCategory;
-    std::cout << "Category: ";
-    std::getline(std::cin, tempCategory);
-    std::cout << std::endl;
-    category = this->provider.string_to_category(tempCategory);
-
-    std::cout << "Comment: ";
-    std::getline(std::cin, comment);
-    std::cout << std::endl;
+    comment = this->handle_input_data("Comment: ");
 
     Transaction newT(day, month, year, amount, isIncome, category, comment);
     return newT;
 };
 
+// Handle user's choice
 void Input::handle_input() {
     while(this->is_active) {
-        ushort choise;
+        ushort choice;
 
         print_help();
+
         std::cout << "Your choice: ";
-        std::cin.clear();
-        std::cin >> choise;
+        std::cin >> choice;
+        std::cin.ignore(
+            std::numeric_limits<std::streamsize>::max(),
+            '\n'
+        );
         std::cout << std::endl;
-        if(!std::cin >> choise) {
+
+        if(!std::cin >> choice) {
             std::cin.clear();
             std::cin.ignore(
                 std::numeric_limits<std::streamsize>::max(),
                 '\n'
             );
+
             std::cout << "You must enter a number!" << std::endl;
             continue;
         }
 
-        switch(choise) {
+        switch(choice) {
             case 1: {
                 Transaction t = generate_transaction();
                 this->provider.add_record(t);
                 break;
             }
             case 2: {
-                this->provider.print_records();
+                if(this->provider.print_records() == -1) {
+                    std::cout << "No records have been saved yet!" << "\n\n";
+                }
                 break;
             }
             case 3: {
@@ -118,6 +107,7 @@ void Input::handle_input() {
                     default:
                         filterType = None;
                 }
+
                 this->provider.set_filter_by(filterType);
                 break;
             }
@@ -126,13 +116,55 @@ void Input::handle_input() {
                 break;
             }
             case 5: {
-                this->provider.print_records();
+                if(this->provider.print_records() == -1) {
+                    std::cout << "No records were found corresponding to the filter type to be printed!" << "\n\n";
+                    continue;
+                }
+
                 std::cout << "Index to remove: ";
                 ushort index;
                 std::cin >> index;
+
                 this->provider.remove_record(index);
                 break;
             }
         }
     }
+}
+
+// Handle std::string input using getline
+std::string Input::handle_input_data(std::string prompt) {
+    std::cout << prompt << std::flush;
+    std::string result;
+
+    std::getline(std::cin, result);
+    std::cout << std::endl;
+    
+    return result;
+}
+
+// Handle y/n acception with character check
+bool Input::handle_input_acception(std::string prompt) {
+    char result;
+    std::cout << prompt << std::flush;
+
+    while(!(std::cin >> result) ||
+        std::tolower(static_cast<unsigned char>(result)) != 'y' && std::tolower(static_cast<unsigned char>(result)) != 'n') {
+            std::cout << prompt;
+            continue;
+        };
+
+    std::cout << std::endl;
+
+    std::cin.ignore();
+
+    return result;
+}
+
+// Transform std::string into double with range check, returns -1 when out of range
+double Input::string_to_double(std::string data, double min, double max) {
+    double result = std::stod(data);
+    if(result < min || result > max) return -1;
+
+    return result;
 }
