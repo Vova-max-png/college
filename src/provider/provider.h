@@ -26,6 +26,11 @@ struct Transaction {
     Transaction(ushort day, ushort month, ushort year, double amount, bool isIncome, TransactionCategory category, std::string comment);
 };
 
+struct MostExpensiveCategory {
+    TransactionCategory category;
+    int amount;
+};
+
 // Filter enum that is used to describe 
 // a filterting way
 enum FilterBy {
@@ -46,6 +51,11 @@ class Provider {
         int general_expenses();
         int avg_expenses();
 
+        MostExpensiveCategory most_expensive_category();
+        std::vector<std::vector<Transaction>::iterator> sort_categories();
+
+        int category_expenses(TransactionCategory category);
+
         bool is_income(TransactionCategory category);
 
         std::string category_to_string(TransactionCategory category);
@@ -58,7 +68,7 @@ class Provider {
         int remove_record(int index);
 
         void add_record(Transaction t);
-        void print_records();
+        int print_records();
         void print_statistics();
         void set_filter_by(FilterBy filterOption);
 };

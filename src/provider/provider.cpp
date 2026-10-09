@@ -1,8 +1,5 @@
 #include "provider.h"
-#include <algorithm>
-#include <cctype>
-#include <iomanip>
-#include <string>
+#include <vector>
 
 Transaction::Transaction(ushort day, ushort month, ushort year, double amount, bool isIncome, TransactionCategory category, std::string comment) {
     if(month > 12) month = month % 12;
@@ -20,6 +17,8 @@ Transaction::Transaction(ushort day, ushort month, ushort year, double amount, b
 // Adds a new record into journal
 void Provider::add_record(Transaction t) {
     this->journal.push_back(t);
+
+    std::cout << "A new record has been added successfully!" << "\n\n";
 }
 
 // Removes record from journal
@@ -75,14 +74,19 @@ TransactionCategory Provider::string_to_category(std::string category) {
 
 // Print all saved records in the journal
 // Automatically applies filters of FilterBy enum set in the Provider class
-void Provider::print_records() {
-    print_statistics_header();
+int Provider::print_records() {
     int index = 0;
     std::vector<Transaction> trans;
     FilterBy filter_conf = this->filter_config;
+
     for(Transaction t : this->journal) {
         if(filter_conf == None || filter_conf == t.isIncome) trans.push_back(t);
     }
+
+    if(trans.empty()) return -1;
+
+    print_statistics_header();
+
     std::sort(trans.begin(), trans.end(), [filter_conf](Transaction t1, Transaction t2) {
         switch(filter_conf) {
             case Expenses:
@@ -97,6 +101,7 @@ void Provider::print_records() {
                 return false;
         }
     });
+
     for(Transaction t : trans) {
         std::string date = std::to_string(t.day) + "." + std::to_string(t.month) + "." + std::to_string(t.year);
         std::cout << std::left << std::setw(2) << index
@@ -106,7 +111,10 @@ void Provider::print_records() {
             << std::right << std::setw(12) << t.amount << std::endl;
         index += 1;
     }
+
     std::cout << std::endl;
+
+    return 0;
 }
 
 void Provider::print_statistics_header() {
@@ -119,11 +127,16 @@ void Provider::print_statistics_header() {
 }
 
 void Provider::print_statistics() {
+    MostExpensiveCategory mostExpensive;
+
+    mostExpensive = this->most_expensive_category();
+
     std::cout << "Records amount: " << this->journal.size() << std::endl;
-    std::cout << "Income: " << this->general_income() << std::endl;
-    std::cout << "Expenses: " << this->general_expenses() << std::endl;
-    std::cout << "Balance: " << this->general_income() - this->general_expenses() << std::endl;
-    std::cout << "Average expenses: " << this->avg_expenses() << std::endl << std::endl;
+    std::cout << "Income: " << this->general_income() << '\n';
+    std::cout << "Expenses: " << this->general_expenses() << '\n';
+    std::cout << "Balance: " << this->general_income() - this->general_expenses() << '\n';
+    std::cout << "Average expenses: " << this->avg_expenses() << '\n';
+    std::cout << "The most expensive: " << this->category_to_string(mostExpensive.category) << " (" << mostExpensive.amount << ")" << "\n\n";
 }
 
 int Provider::avg_expenses() {
@@ -158,6 +171,60 @@ int Provider::general_expenses() {
 
 void Provider::set_filter_by(FilterBy filterOption) {
     this->filter_config = filterOption;
+}
+
+std::vector<std::vector<Transaction>::iterator> Provider::sort_categories() {
+    std::vector<std::vector<Transaction>::iterator> sortedIterators;
+
+    std::vector<TransactionCategory> categories = {
+        TransactionCategory::Education,
+        TransactionCategory::Entertainment,
+        TransactionCategory::Food,
+        TransactionCategory::Gift,
+        TransactionCategory::Health,
+        TransactionCategory::Other,
+        TransactionCategory::PartTimeJob,
+        TransactionCategory::Scholarship,
+        TransactionCategory::Transport
+    };
+
+    for(TransactionCategory category : categories) {
+        int categorySum = 0;
+
+        std::vector<Transaction>::iterator it = std::find_if(this->journal.begin(), 
+        this->journal.end(), 
+        [category](const Transaction transaction) { return transaction.category == category; });
+
+        sortedIterators.push_back(it);
+    }
+
+    return sortedIterators;
+}
+
+MostExpensiveCategory Provider::most_expensive_category() {
+    int result = 0;
+    TransactionCategory resultCategory;
+
+    std::vector<std::vector<Transaction>::iterator> sortedIterators = this->sort_categories();
+
+    for(std::vector<Transaction>::iterator it : sortedIterators) {
+        int categorySum = 0;
+        TransactionCategory currentCategory = it->category;
+
+        for(; it != this->journal.end(); ++it) {
+            categorySum += it->amount;
+        }
+
+        if(categorySum > result) {
+            result = categorySum;
+            resultCategory = currentCategory;
+        }
+    }
+
+    return MostExpensiveCategory {
+        resultCategory,
+        result
+    };
 }
 
 Provider::Provider() {}
