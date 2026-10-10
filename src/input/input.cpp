@@ -5,11 +5,12 @@ Input::Input() {
 }
 
 void Input::print_help() {
-    std::cout << "1. Add a new record" << std::endl
-        << "2. Show all records" << std::endl
-        << "3. Filters" << std::endl
-        << "4. Statistics" << std::endl
-        << "5. Remove a record" << std::endl
+    std::cout << "1. Add a new record" << '\n'
+        << "2. Show all records" << '\n'
+        << "3. Filters" << '\n'
+        << "4. Statistics" << '\n'
+        << "5. Remove a record" << '\n'
+        << "6. Visualize expenses" << '\n'
         << "0. Exit" << "\n\n";
 }
 
@@ -140,6 +141,10 @@ void Input::handle_input() {
                 std::cin >> index;
 
                 this->provider.remove_record(index);
+                break;
+            }
+            case 6: {
+                this->provider.visualize_expenses();
                 break;
             }
             case 0:

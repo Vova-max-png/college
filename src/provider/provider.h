@@ -61,6 +61,7 @@ class Provider {
         std::string category_to_string(TransactionCategory category);
 
         void print_statistics_header();
+        std::map<TransactionCategory, double> expenses_by_category();
 
     public:
         Provider();
@@ -70,5 +71,6 @@ class Provider {
         void add_record(Transaction t);
         int print_records();
         void print_statistics();
+        void visualize_expenses();
         void set_filter_by(FilterBy filterOption);
 };

@@ -141,6 +141,43 @@ void Provider::print_statistics() {
     std::cout << "The most expensive: " << this->category_to_string(mostExpensive.category) << " (" << mostExpensive.amount << ")" << "\n\n";
 }
 
+void Provider::visualize_expenses() {
+    if(this->journal.empty()) {
+        std::cout << "No records found to visualize!" << "\n\n";
+        return;
+    }
+
+    std::map<TransactionCategory, double> categoryExpenses = this->expenses_by_category();
+
+    std::vector<std::pair<TransactionCategory, double>> pairs;
+
+    for(const std::pair<TransactionCategory, double> pair : categoryExpenses) {
+        pairs.emplace_back(pair.first, pair.second);
+    }
+
+    std::sort(
+        pairs.begin(),
+        pairs.end(),
+        [](std::pair<TransactionCategory, double>& a, std::pair<TransactionCategory, double>& b) {
+            return a.second > b.second;
+        }
+    );
+
+    double max_spent = pairs.begin()->second;
+    int maxCharsAmount = 0;
+
+    for(std::pair<TransactionCategory, double> pair : pairs) {
+        int charsAmount = static_cast<int>(pair.second / max_spent * 30);
+        if(maxCharsAmount == 0) maxCharsAmount = charsAmount;
+
+        std::cout << std::left << std::setw(15) << this->category_to_string(pair.first)
+            << std::setw(maxCharsAmount + 1) << std::string(charsAmount, '#')
+            << std::right << std::setw(10) << pair.second << '\n';
+    }
+
+    std::cout << std::endl;
+}
+
 int Provider::avg_expenses() {
     int result = 0;
     int count = 0;
@@ -176,8 +213,6 @@ void Provider::set_filter_by(FilterBy filterOption) {
 }
 
 std::map<TransactionCategory, std::vector<Transaction>> Provider::sort_categories() {
-    std::vector<std::vector<Transaction>> sortedByCategory;
-
     std::vector<Transaction> journalCopy = this->journal;
 
     std::sort(journalCopy.begin(), 
@@ -224,6 +259,23 @@ MostExpensiveCategory Provider::most_expensive_category() {
         resultCategory,
         result
     };
+}
+
+std::map<TransactionCategory, double> Provider::expenses_by_category() {
+    std::map<TransactionCategory, double> expenses;
+    std::map<TransactionCategory, std::vector<Transaction>> groups = this->sort_categories();
+
+    for(std::pair<TransactionCategory, std::vector<Transaction>> group : groups) {
+        int sum = 0;
+
+        for(Transaction transaction : group.second) {
+            sum += transaction.amount;
+        }
+        
+        expenses[group.first] = sum;
+    }
+
+    return expenses;
 }
 
 Provider::Provider() {}
