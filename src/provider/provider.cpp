@@ -127,9 +127,7 @@ void Provider::print_statistics_header() {
 }
 
 void Provider::print_statistics() {
-    MostExpensiveCategory mostExpensive;
-
-    mostExpensive = this->most_expensive_category();
+    MostExpensiveCategory mostExpensive = this->most_expensive_category();
 
     std::cout << "Records amount: " << this->journal.size() << std::endl;
     std::cout << "Income: " << this->general_income() << '\n';
@@ -173,51 +171,48 @@ void Provider::set_filter_by(FilterBy filterOption) {
     this->filter_config = filterOption;
 }
 
-std::vector<std::vector<Transaction>::iterator> Provider::sort_categories() {
-    std::vector<std::vector<Transaction>::iterator> sortedIterators;
+std::map<TransactionCategory, std::vector<Transaction>> Provider::sort_categories() {
+    std::vector<std::vector<Transaction>> sortedByCategory;
 
-    std::vector<TransactionCategory> categories = {
-        TransactionCategory::Education,
-        TransactionCategory::Entertainment,
-        TransactionCategory::Food,
-        TransactionCategory::Gift,
-        TransactionCategory::Health,
-        TransactionCategory::Other,
-        TransactionCategory::PartTimeJob,
-        TransactionCategory::Scholarship,
-        TransactionCategory::Transport
-    };
+    std::vector<Transaction> journalCopy = this->journal;
 
-    for(TransactionCategory category : categories) {
-        int categorySum = 0;
+    std::sort(journalCopy.begin(), 
+        journalCopy.end(),
+        [](const Transaction& a, const Transaction& b) {
+            return a.category < b.category;
+        }
+    );
 
-        std::vector<Transaction>::iterator it = std::find_if(this->journal.begin(), 
-        this->journal.end(), 
-        [category](const Transaction transaction) { return transaction.category == category; });
+    std::map<TransactionCategory, std::vector<Transaction>> groups;
 
-        sortedIterators.push_back(it);
+    for(const Transaction& transaction : journalCopy) {
+        if(transaction.isIncome) continue;
+        
+        groups[transaction.category].push_back(transaction);
     }
 
-    return sortedIterators;
+    return groups;
 }
 
 MostExpensiveCategory Provider::most_expensive_category() {
     int result = 0;
     TransactionCategory resultCategory;
 
-    std::vector<std::vector<Transaction>::iterator> sortedIterators = this->sort_categories();
+    std::map<TransactionCategory, std::vector<Transaction>> groups = this->sort_categories();
 
-    for(std::vector<Transaction>::iterator it : sortedIterators) {
-        int categorySum = 0;
-        TransactionCategory currentCategory = it->category;
+    for(std::pair<const TransactionCategory, std::vector<Transaction>> pair : groups) {
+        int groupAmount = 0;
 
-        for(; it != this->journal.end(); ++it) {
-            categorySum += it->amount;
+        TransactionCategory cuurentCategory = pair.first;
+        std::vector<Transaction> transactions = pair.second;
+
+        for(Transaction transaction : transactions) {
+            groupAmount += transaction.amount;
         }
 
-        if(categorySum > result) {
-            result = categorySum;
-            resultCategory = currentCategory;
+        if(groupAmount > result) {
+            result = groupAmount;
+            resultCategory = cuurentCategory;
         }
     }
 
