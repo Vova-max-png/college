@@ -56,8 +56,6 @@ class Provider {
 
         int category_expenses(TransactionCategory category);
 
-        bool is_income(TransactionCategory category);
-
         std::string category_to_string(TransactionCategory category);
 
         void print_statistics_header();

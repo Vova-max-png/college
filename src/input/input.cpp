@@ -35,8 +35,7 @@ Transaction Input::generate_transaction() {
     this->ask_user_double<double>(&amount, "amount", 0, std::numeric_limits<double>::max());
     
     char input;
-    input = this->handle_input_acception("Is income(Y/n): ");
-    isIncome = input == 'y' ? true : false;
+    isIncome = this->handle_input_acception("Is income(Y/n): ");
 
     std::string categoryHandler;
     categoryHandler = this->handle_input_data("Category: ");

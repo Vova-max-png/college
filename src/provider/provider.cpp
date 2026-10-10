@@ -29,16 +29,6 @@ int Provider::remove_record(int removeIndex) {
     return 0;
 }
 
-bool Provider::is_income(TransactionCategory category) {
-    switch(category) {
-        case Scholarship:
-        case PartTimeJob:
-        case Gift:
-        case Other: return false;
-        default: return true;
-    }
-}
-
 // Converts TransactionCategory type into string
 // Used to output the category of the transaction
 std::string Provider::category_to_string(TransactionCategory category) {
@@ -79,7 +69,10 @@ int Provider::print_records() {
     FilterBy filter_conf = this->filter_config;
 
     for(Transaction t : this->journal) {
-        if(filter_conf == None || filter_conf == t.isIncome) trans.push_back(t);
+        bool income = filter_conf == Income ? true : false;
+        
+        if(income == false && filter_conf != Expenses || income == t.isIncome)
+            trans.push_back(t);
     }
 
     if(trans.empty()) return -1;
