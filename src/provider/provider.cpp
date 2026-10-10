@@ -1,5 +1,4 @@
 #include "provider.h"
-#include <vector>
 
 Transaction::Transaction(ushort day, ushort month, ushort year, double amount, bool isIncome, TransactionCategory category, std::string comment) {
     if(month > 12) month = month % 12;
@@ -127,6 +126,11 @@ void Provider::print_statistics_header() {
 }
 
 void Provider::print_statistics() {
+    if(this->journal.empty()) {
+        std::cout << "There are no elements in the journal yet!" << "\n\n";
+        return;
+    }
+
     MostExpensiveCategory mostExpensive = this->most_expensive_category();
 
     std::cout << "Records amount: " << this->journal.size() << std::endl;

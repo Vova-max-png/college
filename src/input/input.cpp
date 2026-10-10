@@ -10,7 +10,7 @@ void Input::print_help() {
         << "3. Filters" << std::endl
         << "4. Statistics" << std::endl
         << "5. Remove a record" << std::endl
-        << "0. Exit" << std::endl;
+        << "0. Exit" << "\n\n";
 }
 
 // Generate transaction, protects each field from being set unproperly
@@ -47,11 +47,12 @@ Transaction Input::generate_transaction() {
     return newT;
 };
 
-// Handle user's choice
-void Input::handle_input() {
-    while(this->is_active) {
-        ushort choice;
+ushort Input::request_choice() {
+    ushort choice;
 
+    bool running = true;
+
+    while(running) {
         print_help();
 
         std::cout << "Your choice: ";
@@ -73,6 +74,19 @@ void Input::handle_input() {
             continue;
         }
 
+        running = false;
+    }
+
+    return choice;
+}
+
+// Handle user's choice
+void Input::handle_input() {
+    ushort choice;
+
+    while(this->is_active) {
+        choice = this->request_choice();
+
         switch(choice) {
             case 1: {
                 Transaction t = generate_transaction();
@@ -81,7 +95,7 @@ void Input::handle_input() {
             }
             case 2: {
                 if(this->provider.print_records() == -1) {
-                    std::cout << "No records have been saved yet!" << "\n\n";
+                    std::cout << "No records were found corresponding to the filter type to be printed!" << "\n\n";
                 }
                 break;
             }
@@ -128,6 +142,8 @@ void Input::handle_input() {
                 this->provider.remove_record(index);
                 break;
             }
+            case 0:
+                exit(0);
         }
     }
 }
@@ -145,25 +161,28 @@ std::string Input::handle_input_data(std::string prompt) {
 
 // Handle y/n acception with character check
 bool Input::handle_input_acception(std::string prompt) {
-    char result;
-    std::cout << prompt << std::flush;
+    std::string result;
 
-    while(!(std::cin >> result) ||
-        std::tolower(static_cast<unsigned char>(result)) != 'y' && std::tolower(static_cast<unsigned char>(result)) != 'n') {
-            std::cout << prompt;
-            continue;
-        };
+    do {
+        std::cout << prompt << std::flush;
+        std::getline(std::cin, result);
+    } while(std::tolower(static_cast<unsigned char>(result[0])) != 'y' && std::tolower(static_cast<unsigned char>(result[0])) != 'n');
 
     std::cout << std::endl;
 
-    std::cin.ignore();
-
-    return result;
+    return result[0] == 'y' ? true : false;
 }
 
 // Transform std::string into double with range check, returns -1 when out of range
 double Input::string_to_double(std::string data, double min, double max) {
-    double result = std::stod(data);
+    double result;
+
+    try {
+        result = std::stod(data);
+    } catch (const std::invalid_argument & e) {
+        return -1;
+    }
+
     if(result < min || result > max) return -1;
 
     return result;

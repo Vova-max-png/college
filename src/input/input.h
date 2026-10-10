@@ -8,6 +8,7 @@ class Input {
         Transaction generate_transaction();
 
         void print_help();
+        ushort request_choice();
 
         std::string handle_input_data(std::string prompt);
         bool handle_input_acception(std::string prompt);
