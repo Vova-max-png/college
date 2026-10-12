@@ -124,14 +124,24 @@ void Provider::print_statistics() {
         return;
     }
 
-    MostExpensiveCategory mostExpensive = this->most_expensive_category();
+    std::vector<std::pair<TransactionCategory, double>> transactionsAmount = this->most_expensive_categories();
+    std::pair<TransactionCategory, double> mostExpensive = transactionsAmount[0];
+    int pairsCount = transactionsAmount.size();
 
     std::cout << "Records amount: " << this->journal.size() << std::endl;
     std::cout << "Income: " << this->general_income() << '\n';
     std::cout << "Expenses: " << this->general_expenses() << '\n';
     std::cout << "Balance: " << this->general_income() - this->general_expenses() << '\n';
     std::cout << "Average expenses: " << this->avg_expenses() << '\n';
-    std::cout << "The most expensive: " << this->category_to_string(mostExpensive.category) << " (" << mostExpensive.amount << ")" << "\n\n";
+    std::cout << "The most expensive: " << this->category_to_string(mostExpensive.first) << " (" << mostExpensive.second << ")" << "\n\n";
+
+    std::cout << "Top 3 expenses out of " << pairsCount << ": " << '\n';
+
+    for(int i = 0; i < std::min(3, pairsCount); ++i) {
+        std::cout << i+1 << ". " << this->category_to_string(transactionsAmount[i].first) << " (" << transactionsAmount[i].second << ")\n"; 
+    }
+
+    std::cout << std::endl;
 }
 
 void Provider::visualize_expenses() {
@@ -226,32 +236,32 @@ std::map<TransactionCategory, std::vector<Transaction>> Provider::sort_categorie
     return groups;
 }
 
-MostExpensiveCategory Provider::most_expensive_category() {
-    int result = 0;
-    TransactionCategory resultCategory;
+std::vector<std::pair<TransactionCategory, double>> Provider::most_expensive_categories() {
+    std::vector<std::pair<TransactionCategory, double>> resultVec;
 
     std::map<TransactionCategory, std::vector<Transaction>> groups = this->sort_categories();
 
-    for(std::pair<const TransactionCategory, std::vector<Transaction>> pair : groups) {
-        int groupAmount = 0;
+    for(std::pair<const TransactionCategory, const std::vector<Transaction>> pair : groups) {
+        double groupAmount = 0;
 
-        TransactionCategory cuurentCategory = pair.first;
+        TransactionCategory currentCategory = pair.first;
         std::vector<Transaction> transactions = pair.second;
 
         for(Transaction transaction : transactions) {
             groupAmount += transaction.amount;
         }
 
-        if(groupAmount > result) {
-            result = groupAmount;
-            resultCategory = cuurentCategory;
-        }
+        resultVec.emplace_back(static_cast<TransactionCategory>(currentCategory), static_cast<double>(groupAmount));
     }
 
-    return MostExpensiveCategory {
-        resultCategory,
-        result
-    };
+    std::sort(
+        resultVec.begin(), 
+        resultVec.end(), 
+        [](std::pair<TransactionCategory, double>& a, std::pair<TransactionCategory, double>& b) {
+            return a.second > b.second;
+        });
+
+    return resultVec;
 }
 
 std::map<TransactionCategory, double> Provider::expenses_by_category() {

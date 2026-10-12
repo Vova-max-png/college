@@ -32,7 +32,7 @@ struct MostExpensiveCategory {
 };
 
 // Filter enum that is used to describe 
-// a filterting way
+// the way we filter the records output
 enum FilterBy {
     Expenses,
     Income,
@@ -51,7 +51,7 @@ class Provider {
         int general_expenses();
         int avg_expenses();
 
-        MostExpensiveCategory most_expensive_category();
+        std::vector<std::pair<TransactionCategory, double>> most_expensive_categories();
         std::map<TransactionCategory, std::vector<Transaction>> sort_categories();
 
         int category_expenses(TransactionCategory category);
