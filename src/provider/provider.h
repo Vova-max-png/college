@@ -11,7 +11,7 @@ enum TransactionCategory {
     Other,
     Scholarship,
     PartTimeJob,
-    Gift,
+    Gift
 };
 
 struct Transaction {
@@ -56,15 +56,19 @@ class Provider {
 
         int category_expenses(TransactionCategory category);
 
-        std::string category_to_string(TransactionCategory category);
-
         void print_statistics_header();
         std::map<TransactionCategory, double> expenses_by_category();
 
     public:
         Provider();
-        TransactionCategory string_to_category(std::string category);
+
+        static TransactionCategory string_to_category(std::string category);
+        static std::string category_to_string(TransactionCategory category);
+
         int remove_record(int index);
+
+        void load_file_data();
+        int save_file_data();
 
         void add_record(Transaction t);
         int print_records();

@@ -1,4 +1,4 @@
-#include "provider.h"
+#include "../fs/fs.h"
 
 Transaction::Transaction(ushort day, ushort month, ushort year, double amount, bool isIncome, TransactionCategory category, std::string comment) {
     if(month > 12) month = month % 12;
@@ -279,6 +279,14 @@ std::map<TransactionCategory, double> Provider::expenses_by_category() {
     }
 
     return expenses;
+}
+
+void Provider::load_file_data() {
+    this->journal = FileSystem::load_from_file();
+}
+
+int Provider::save_file_data() {
+    return FileSystem::save_into_file(this->journal);
 }
 
 Provider::Provider() {}

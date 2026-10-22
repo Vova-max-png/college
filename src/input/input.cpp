@@ -11,6 +11,8 @@ void Input::print_help() {
         << "4. Statistics" << '\n'
         << "5. Remove a record" << '\n'
         << "6. Visualize expenses" << '\n'
+        << "7. Save data" << '\n'
+        << "8. Load data" << '\n'
         << "0. Exit" << "\n\n";
 }
 
@@ -93,13 +95,12 @@ void Input::handle_input() {
                 this->provider.add_record(t);
                 break;
             }
-            case 2: {
+            case 2:
                 if(this->provider.print_records() == -1) {
-                    std::cout << "No records were found corresponding to the filter type to be printed!" << "\n\n";
+                    std::cout << "No records were found corresponding to the filter type to be printed!\n\n";
                 }
                 break;
-            }
-            case 3: {
+            case 3: 
                 std::cout << "Choose filtering type(1. By expenses; 2. By income; 3. By category; 4. By month; 0. No filtering): ";
                 int choice;
                 std::cin >> choice;
@@ -124,14 +125,12 @@ void Input::handle_input() {
 
                 this->provider.set_filter_by(filterType);
                 break;
-            }
-            case 4: {
+            case 4: 
                 this->provider.print_statistics();
                 break;
-            }
-            case 5: {
+            case 5: 
                 if(this->provider.print_records() == -1) {
-                    std::cout << "No records were found corresponding to the filter type to be printed!" << "\n\n";
+                    std::cout << "No records were found corresponding to the filter type to be printed!\n\n";
                     continue;
                 }
 
@@ -141,11 +140,17 @@ void Input::handle_input() {
 
                 this->provider.remove_record(index);
                 break;
-            }
-            case 6: {
+            case 6: 
                 this->provider.visualize_expenses();
                 break;
+            case 7: {
+                int result = this->provider.save_file_data();
+                if(result != 0) std::cout << "Couldn't save the data into file!\n\n";
+                break;
             }
+            case 8:
+                this->provider.load_file_data();
+                break;
             case 0:
                 exit(0);
         }
