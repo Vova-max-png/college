@@ -28,7 +28,7 @@ std::vector<Transaction> FileSystem::load_from_file() {
     int sections = count_sections();
     std::cout << "Loading " << sections << " sections\n\n";
 
-    for(int i = 0; i < sections; i++) {
+    for(int i = 0; i <= sections; i++) {
         std::string day;
         std::string month;
         std::string year;
@@ -37,8 +37,15 @@ std::vector<Transaction> FileSystem::load_from_file() {
         std::string TransactionCategory;
         std::string comment;
 
-        std::getline(file, day);
-        if(day.empty()) continue;
+        int iterations = 0;
+        while(std::getline(file, day) && day.empty()) {
+            iterations +=1;
+
+            if(iterations == 2) {
+                iterations = 0;
+                ++i;
+            }
+        }
 
         double parsed_day = parse_double(&file, day, "day", std::make_pair(1, 31));
 
