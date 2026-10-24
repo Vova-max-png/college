@@ -1,5 +1,4 @@
 #include "fs.h"
-#include <string>
 
 int FileSystem::save_into_file(std::vector<Transaction> transactions) {
     std::ofstream file("journal", std::ios::app);
@@ -39,30 +38,32 @@ std::vector<Transaction> FileSystem::load_from_file() {
         std::string comment;
 
         std::getline(file, day);
+        if(day.empty()) continue;
 
-        double parsed_day = parse_double(&file, day, "Invalid day value in journal file!", std::make_pair(1, 31));
+        double parsed_day = parse_double(&file, day, "day", std::make_pair(1, 31));
 
         std::getline(file, month);
 
-        double parsed_month = parse_double(&file, month, "Invalid month value in journal file!", std::make_pair(1, 12));
+        double parsed_month = parse_double(&file, month, "month", std::make_pair(1, 12));
 
         std::getline(file, year);
 
-        double parsed_year = parse_double(&file, year, "Invalid year value in journal file!", std::make_pair(1, 99));
+        double parsed_year = parse_double(&file, year, "year", std::make_pair(1, 99));
 
         std::getline(file, amount);
 
-        double parsed_amount = Input::string_to_double(amount, 1, std::numeric_limits<double>::max());
+        double parsed_amount = parse_double(&file, amount, "amount", std::make_pair(1, std::numeric_limits<double>::max()));
 
         std::getline(file, isIncome);
 
-        int parsed_choice = std::stoul(isIncome, NULL, 10);
+        int parsed_choice = std::strtoul(isIncome.c_str(), NULL, 10);
         if(isIncome != "0" && isIncome != "1") {
             std::cout << "Invalid y/n choice value found in journal file!" << "\n\n";
             parsed_choice = -1;
         }
 
         if(parsed_day == -1 || parsed_month == -1 || parsed_year == -1 || parsed_amount == -1 || parsed_choice == -1) {
+            std::cout << "Make sure the journal file is formatted well\n\n";
             return std::vector<Transaction>();
         }
 
@@ -85,11 +86,11 @@ std::vector<Transaction> FileSystem::load_from_file() {
     return transactions;
 }
 
-int FileSystem::parse_double(std::ifstream *stream, std::string string, std::string error_message, std::pair<double, double> limits) {
+int FileSystem::parse_double(std::ifstream *stream, std::string string, std::string var_name, std::pair<double, double> limits) {
     double parsed_amount = Input::string_to_double(string, limits.first, limits.second);
 
     if(parsed_amount == -1) {
-        std::cout << error_message << "\n\n";
+        std::cout << "Invalid " << var_name << " value in journal file!" << "\n\n";
         return -1;
     }
 

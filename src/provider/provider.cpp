@@ -173,7 +173,6 @@ void Provider::visualize_expenses() {
 
     for(std::pair<TransactionCategory, double> pair : pairs) {
         int charsAmount = static_cast<int>(pair.second / max_spent * 30);
-        std::cout << "Chars amount: " << charsAmount << "\n\n";
         if(maxCharsAmount == 0) maxCharsAmount = charsAmount;
 
         std::cout << std::left << std::setw(15) << this->category_to_string(pair.first)
