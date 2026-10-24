@@ -34,7 +34,7 @@ Transaction Input::generate_transaction() {
 
     this->ask_user_double<short>(&year, "year", 1, 99);
 
-    this->ask_user_double<double>(&amount, "amount", 0, std::numeric_limits<double>::max());
+    this->ask_user_double<double>(&amount, "amount", 1, std::numeric_limits<double>::max());
     
     char input;
     isIncome = this->handle_input_acception("Is income(Y/n): ");
@@ -184,15 +184,9 @@ bool Input::handle_input_acception(std::string prompt) {
 
 // Transform std::string into double with range check, returns -1 when out of range
 double Input::string_to_double(std::string data, double min, double max) {
-    double result;
+    double result = std::strtoul(data.c_str(), NULL, 10);
 
-    try {
-        result = std::stod(data);
-    } catch (const std::invalid_argument & e) {
-        return -1;
-    }
-
-    if(result < min || result > max) return -1;
+    if(result == 0 || result < min || result > max) return -1;
 
     return result;
 }

@@ -13,8 +13,6 @@ class Input {
         std::string handle_input_data(std::string prompt);
         bool handle_input_acception(std::string prompt);
 
-        double string_to_double(std::string, double min, double max);
-
         // TODO: try using double* instead of template to move the logic into cpp file
         template<typename T>
         void ask_user_double(T* var, std::string prompt, double min, double max) {
@@ -26,7 +24,7 @@ class Input {
             }
 
             while(*var == -1) {
-                *var = this->string_to_double(this->handle_input_data(formattedPrompt + ": "), min, max);
+                *var = Input::string_to_double(this->handle_input_data(formattedPrompt + ": "), min, max);
                 if(*var == -1) std::cout << "The value of " << prompt << " must be in range from " << min << " to " << max << "!" << std::endl;
             }
         }
@@ -34,4 +32,6 @@ class Input {
     public:
         Input();
         void handle_input();
+
+        static double string_to_double(std::string, double min, double max);
 };

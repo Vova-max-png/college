@@ -52,7 +52,7 @@ class Provider {
         int avg_expenses();
 
         std::vector<std::pair<TransactionCategory, double>> most_expensive_categories();
-        std::map<TransactionCategory, std::vector<Transaction>> sort_categories();
+        std::map<TransactionCategory, std::vector<Transaction>> group_categories();
 
         int category_expenses(TransactionCategory category);
 

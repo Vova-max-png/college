@@ -145,17 +145,18 @@ void Provider::print_statistics() {
 }
 
 void Provider::visualize_expenses() {
-    if(this->journal.empty()) {
-        std::cout << "No records found to visualize!" << "\n\n";
-        return;
-    }
-
     std::map<TransactionCategory, double> categoryExpenses = this->expenses_by_category();
 
     std::vector<std::pair<TransactionCategory, double>> pairs;
 
     for(const std::pair<TransactionCategory, double> pair : categoryExpenses) {
+        std::cout << pair.second << "\n";
         pairs.emplace_back(pair.first, pair.second);
+    }
+
+    if(pairs.empty()) {
+        std::cout << "No records found to visualize!" << "\n\n";
+        return;
     }
 
     std::sort(
@@ -167,10 +168,12 @@ void Provider::visualize_expenses() {
     );
 
     double max_spent = pairs.begin()->second;
+    std::cout << max_spent << "\n\n";
     int maxCharsAmount = 0;
 
     for(std::pair<TransactionCategory, double> pair : pairs) {
         int charsAmount = static_cast<int>(pair.second / max_spent * 30);
+        std::cout << "Chars amount: " << charsAmount << "\n\n";
         if(maxCharsAmount == 0) maxCharsAmount = charsAmount;
 
         std::cout << std::left << std::setw(15) << this->category_to_string(pair.first)
@@ -215,16 +218,11 @@ void Provider::set_filter_by(FilterBy filterOption) {
     this->filter_config = filterOption;
 }
 
-std::map<TransactionCategory, std::vector<Transaction>> Provider::sort_categories() {
+// Groups all transactions in journal by categories 
+// returns map with TransactionCategory as a key 
+// and a vector of Transactions as a value
+std::map<TransactionCategory, std::vector<Transaction>> Provider::group_categories() {
     std::vector<Transaction> journalCopy = this->journal;
-
-    std::sort(journalCopy.begin(), 
-        journalCopy.end(),
-        [](const Transaction& a, const Transaction& b) {
-            return a.category < b.category;
-        }
-    );
-
     std::map<TransactionCategory, std::vector<Transaction>> groups;
 
     for(const Transaction& transaction : journalCopy) {
@@ -236,10 +234,11 @@ std::map<TransactionCategory, std::vector<Transaction>> Provider::sort_categorie
     return groups;
 }
 
+// Returns the most expensive category
 std::vector<std::pair<TransactionCategory, double>> Provider::most_expensive_categories() {
     std::vector<std::pair<TransactionCategory, double>> resultVec;
 
-    std::map<TransactionCategory, std::vector<Transaction>> groups = this->sort_categories();
+    std::map<TransactionCategory, std::vector<Transaction>> groups = group_categories();
 
     for(std::pair<const TransactionCategory, const std::vector<Transaction>> pair : groups) {
         double groupAmount = 0;
@@ -264,9 +263,12 @@ std::vector<std::pair<TransactionCategory, double>> Provider::most_expensive_cat
     return resultVec;
 }
 
+// Calculates expenses for each category
+// Returns a map with TransactionCategory as a key
+// and double as a value where double is the sum for specific category
 std::map<TransactionCategory, double> Provider::expenses_by_category() {
     std::map<TransactionCategory, double> expenses;
-    std::map<TransactionCategory, std::vector<Transaction>> groups = this->sort_categories();
+    std::map<TransactionCategory, std::vector<Transaction>> groups = group_categories();
 
     for(std::pair<TransactionCategory, std::vector<Transaction>> group : groups) {
         int sum = 0;

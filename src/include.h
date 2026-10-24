@@ -12,5 +12,6 @@
 #include <limits>
 #include <map>
 #include <fstream>
+#include <cctype>
 
 #endif
